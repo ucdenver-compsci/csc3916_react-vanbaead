@@ -1,17 +1,35 @@
 import React, { Component } from 'react';
-import { fetchMovie } from "../actions/movieActions";
+import { fetchMovie, submitReview } from "../actions/movieActions";
 import {connect} from 'react-redux';
-import {Card, ListGroup, ListGroupItem } from 'react-bootstrap';
+import {Card, ListGroup, ListGroupItem, Form, Button } from 'react-bootstrap';
 import { BsStarFill } from 'react-icons/bs'
 import { Image } from 'react-bootstrap';
 
 class MovieDetail extends Component {
+    constructor(props) {
+        super(props);
+        this.handleReview = this.handleReview.bind(this);
+    }
 
     componentDidMount() {
         const {dispatch} = this.props;
         if (this.props.selectedMovie == null) {
             dispatch(fetchMovie(this.props.movieId));
         }
+    }
+
+    handleReview(event) {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+
+        const reviewData = {
+            review: formData.get("review"),
+            rating: formData.get("rating"),
+            movieId: formData.get("movieId"),
+            username: this.props.username
+        };
+        const { dispatch } = this.props;
+        dispatch(submitReview(reviewData));
     }
 
     render() {
@@ -44,6 +62,22 @@ class MovieDetail extends Component {
                             </p>
                         )}
                     </Card.Body>
+                    <Card.Body>
+                        <Form onSubmit={this.handleReview}>
+                            <Form.Group controlId="review">
+                                <Form.Label>Review</Form.Label>
+                                <Form.Control as="textarea" rows={3} name="review" required />
+                            </Form.Group>
+                            <Form.Group controlId="rating">
+                                <Form.Label>Rating</Form.Label>
+                                <Form.Control type="number" min="0" max="5" name="rating" required />
+                            </Form.Group>
+                            <input type='hidden' name='movieId' value={this.props.selectedMovie._id} />
+                            <Button variant="primary" type="submit">
+                                Submit
+                            </Button>
+                        </Form>
+                    </Card.Body>
                 </Card>
             )
         }
@@ -56,7 +90,8 @@ class MovieDetail extends Component {
 
 const mapStateToProps = state => {
     return {
-        selectedMovie: state.movie.selectedMovie
+        selectedMovie: state.movie.selectedMovie,
+        username: state.auth.username
     }
 }
 

@@ -23,6 +23,13 @@ function movieSet(movie) {
     }
 }
 
+function reviewAdd(review) {
+    return{
+        type: actionTypes.ADD_REVIEW,
+        review: review
+    }
+}
+
 export function setMovie(movie) {
     return dispatch => {
         dispatch(movieSet(movie));
@@ -68,5 +75,33 @@ export function fetchMovies() {
         }).then((res) => {
             dispatch(moviesFetched(res));
         }).catch((e) => console.log(e));
+    }
+}
+
+export function submitReview(reviewData) {
+    return dispatch => {
+        debugger;
+        return fetch(`${env.REACT_APP_API_URL}/reviews`, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': localStorage.getItem('token')
+            },
+            body: JSON.stringify(reviewData),
+            mode: 'cors'
+        })
+        .then((response) => {
+            if (!response.ok) {
+                throw Error(response.statusText);
+            }
+        })
+        .then((res) => {
+            console.log("Review Submitted Succesfully", res);
+            dispatch(reviewAdd(reviewData));
+        })
+        .catch((error) => {
+            console.error('Error submitting review', error);
+        })
     }
 }
